@@ -154,11 +154,20 @@ def build_doc_prompts(eval_data, args):
     decontamination, contamination_threshold, decontamination_method = args.get('decontamination', False), args.get('contamination_threshold', 0.5), args.get('decontamination_method', 'longest')
     use_continuation, use_both_doc_and_continuation = args.get('use_continuation', False), args.get('use_both_doc_and_continuation', False)
     
+    # # For debugging: print keys of the first example to inspect its structure
+    # if eval_data:
+    #     # print("DEBUG: Keys in first eval_data example:", list(eval_data[0].values()))
+    #     print("DEBUG: Keys in first eval_data example:", list(eval_data[0].keys()))
+        
+
     # concate the doc with query regardless of length constraint
     # make sure the number of tokens retrieved text + query is smaller than max_seq_len
     # prepend the doc in a reverse order wrt relevance such that we can truncate tokens from left
     all_contexts, all_answers = [], []
     for ex in eval_data[1:]:
+        # # Print keys for each example (or selectively)
+        # print("DEBUG: Keys in current example:", list(ex.keys()))
+
         answer = extract_answer(ex['raw_inputs'], ex['raw_query'])
         doc = ''
         no_enough_docs_count = 0

@@ -1,4 +1,4 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: lm_eval
 Version: 0.4.2
 Summary: A framework for evaluating language models
@@ -107,6 +107,7 @@ Requires-Dist: lm_eval[vllm]; extra == "all"
 Requires-Dist: lm_eval[zeno]; extra == "all"
 Requires-Dist: lm_eval[wandb]; extra == "all"
 Requires-Dist: lm_eval[unitxt]; extra == "all"
+Dynamic: license-file
 
 # Retrieval Augmented Generation (RAG) Evaluation Harness
 Adapted From [Language Model Evaluation Harness](https://github.com/EleutherAI/lm-evaluation-harness)
