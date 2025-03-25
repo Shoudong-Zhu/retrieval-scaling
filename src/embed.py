@@ -70,8 +70,8 @@ def embed_passages(args, passages, model, tokenizer):
                         )
                         # not use cuda
                         # encoded_batch = {k: v for k, v in encoded_batch.items()}
-                        encoded_batch = {k: v.to("mps") for k, v in encoded_batch.items()}
-                        # encoded_batch = {k: v.cuda() for k, v in encoded_batch.items()}
+                        # encoded_batch = {k: v.to("mps") for k, v in encoded_batch.items()}
+                        encoded_batch = {k: v.cuda() for k, v in encoded_batch.items()}
                         embeddings = model(**encoded_batch)  # shape: (per_gpu_batch_size, hidden_size)
                         if "contriever" not in args.model_name_or_path:
                             # assume in hf form
@@ -128,8 +128,8 @@ def generate_passage_embeddings(cfg):
             raise AttributeError
         
         model.eval()
-        model = model.to("mps")
-        # model = model.cuda()
+        # model = model.to("mps")
+        model = model.cuda()
         if not args.no_fp16:
             model = model.half()
         
