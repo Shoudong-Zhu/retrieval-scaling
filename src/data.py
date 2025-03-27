@@ -21,6 +21,53 @@ def fast_load_jsonl_shard(args, shard_index, return_all_passages=True):
     This function reads only the data portion of the `shard_index` shard, chunks the text from each line 
     based on `chunk_sz`, and appends each chunk to a list with an incremental ID.
     """
+    # If streaming is enabled, use the Hugging Face load_dataset API with streaming=True.
+    if args.get("streaming", False):
+        from datasets import load_dataset
+        logging.info("Loading dataset in streaming mode...")
+        ds = load_dataset(args.raw_data_path, split="train", streaming=True)
+        
+        raw_data_key = args.get("raw_data_key", "text")
+        chunk_sz = args.chunk_size
+        min_chunk_sz = args.get('min_chunk_sz', 0)
+        keep_last = args.get('keep_last_chunk', True)
+        chunking_strategy = args.get('chunking_strategy', 'fixed_size')
+        keep_raw_metadata = args.get('keep_raw_metadata', True)
+        
+        passages = []
+        idx = 0
+        # Iterate over the streaming dataset. (You may choose to limit the number of examples for testing.)
+        for ex in ds:
+            # Get the text field from the example.
+            text = ex.get(raw_data_key, "").strip()
+            if not text:
+                continue
+            # Split the text into chunks using your existing splitting function.
+            chunks = split_data_into_chunks(text, chunk_sz, min_chunk_sz, keep_last, chunking_strategy)
+            for chunk in chunks:
+                if keep_raw_metadata:
+                    # Copy all metadata and update with chunk-specific info.
+                    passage = dict(ex)
+                    passage.update({
+                        "text": chunk,
+                        "id": idx,
+                        "shard_id": shard_index,  # This might be a dummy value in streaming mode.
+                        "num_shards": 1,         # Streaming mode uses the whole dataset.
+                    })
+                else:
+                    passage = {
+                        "text": chunk,
+                        "id": idx,
+                        "shard_id": shard_index,
+                        "num_shards": 1,
+                    }
+                passages.append(passage)
+                idx += 1
+            # Optionally, break early for testing purposes:
+            # if idx > 1000: break  
+        return passages
+    
+    # Else, proceed with the existing local file-based implementation.
     raw_data_path = args.raw_data_path
     raw_data_key = args.get('raw_data_key', 'text')
     num_shards = args.num_shards
